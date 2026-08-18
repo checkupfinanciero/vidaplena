@@ -363,7 +363,7 @@ table.tbl input,table.tbl select{padding:8px 10px;font-size:14px}
         <div class="lc-chip"><b>60s+</b><span>Cosecha y libertad</span></div>
       </div>
     </div>
-    <div class="login-foot">Grupo Asesores RAM · Agencia GNP con 26 años de experiencia · v3.5.1</div>
+    <div class="login-foot">Grupo Asesores RAM · Agencia GNP con 26 años de experiencia · v3.5.2</div>
   </div>
   <div class="login-panel">
     <div class="login-card">
@@ -550,7 +550,7 @@ function contarDiasLaborales(desde, hasta){
 const DIA_MS=864e5;
 function ymd(d){ return new Date(d).toLocaleDateString('en-CA') }   // YYYY-MM-DD local
 function esHoy(ts){ return ymd(ts)===ymd(new Date()) }
-const APP_VERSION = 'v3.5.1';
+const APP_VERSION = 'v3.5.2';
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('vp_'+k); return v?JSON.parse(v):d }catch(e){ return d } },
   set(k,v){ localStorage.setItem('vp_'+k, JSON.stringify(v)) }
@@ -1179,10 +1179,7 @@ function stepReloj(a,c){
     </div>
     <div class="reloj-track"><div class="fill" style="width:${pct}%"></div><div class="dot" style="left:${pct}%"></div></div>
     <div class="reloj-scale"><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span><span>${ESPERANZA_VIDA}</span></div>
-    <div class="hack-box"><div class="hb-ico">⏱️💡</div><div>
-      <div class="hb-t">HACK EFECTIVO (20s y 30s)</div>
-      <div class="hb-d">Paga tus aportes pronto (ej. 10 años) <b>y deja que el interés compuesto haga el resto</b> hasta tu vejez.</div>
-    </div></div>
+    ${hackBox(a,c)}
   </div>
   <div class="sect" style="padding-top:22px">
     <h3>🧭 Conclusiones para ${esc(a.perfil.nombre||'tu prospecto')}</h3>
@@ -1372,7 +1369,7 @@ function buildReportHTML(a){
     </div>
     <div class="rp-foot">
       <span><b>${esc(ct.name||agent.name||a.agent)}</b> · ${ct.phone?'WhatsApp '+esc(ct.phone)+' · ':''}${ct.email?esc(ct.email)+' · ':''}Grupo Asesores RAM · Agente GNP</span>
-      <span>Documento informativo con fines de diagnóstico. No constituye una cotización formal. · v3.5.1</span>
+      <span>Documento informativo con fines de diagnóstico. No constituye una cotización formal. · v3.5.2</span>
     </div>
   </div>`;
 }
@@ -1508,6 +1505,32 @@ function donut(pct, color, label, sub){
       stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 60 60)"/>
     <text x="60" y="57" text-anchor="middle" font-family="Sora,sans-serif" font-size="24" font-weight="800" fill="#fff">${label}</text>
     <text x="60" y="75" text-anchor="middle" font-size="11" fill="#9FB8DA">${sub}</text></svg>`;
+}
+
+
+/* --- «El hack»: aportar por un plazo limitado y dejar trabajar al interés compuesto --- */
+function hackBox(a,c){
+  const edad=+a.perfil.edad||0, jub=+a.perfil.edadJub||65;
+  const plazos=[5,10,15].filter(p=>edad>0 ? edad+p < jub : true);
+  const chips = edad>0 && plazos.length
+    ? plazos.map(p=>{
+        const crece=jub-(edad+p);
+        return `<div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:11px;padding:9px 13px;flex:1;min-width:132px">
+          <div style="font-family:var(--font-d);font-weight:800;font-size:14.5px;color:var(--gold)">${p} años aportando</div>
+          <div style="font-size:11.8px;color:#C8D8EE;margin-top:2px">terminas a los <b style="color:#fff">${edad+p}</b> y tu dinero sigue creciendo <b style="color:#fff">${crece} años</b> más</div>
+        </div>`}).join('')
+    : '';
+  const cierre = edad>0
+    ? (plazos.length
+        ? `A tus <b style="color:#fff">${edad} años</b> todavía puedes elegir el plazo que te acomode: lo que define el resultado no es cuánto tiempo pagas, sino <b style="color:#fff">cuánto tiempo dejas trabajar tu dinero</b>.`
+        : `A tus <b style="color:#fff">${edad} años</b> el plazo se ajusta a tu horizonte: aportas de forma concentrada y el rendimiento acompaña el tramo que falta. <b style="color:#fff">Nunca es tarde, pero cada año cuenta.</b>`)
+    : 'Lo que define el resultado no es cuánto tiempo pagas, sino cuánto tiempo dejas trabajar tu dinero.';
+  return `<div class="hack-box" style="align-items:flex-start"><div class="hb-ico">⏱️💡</div><div style="flex:1">
+      <div class="hb-t">EL HACK QUE FUNCIONA A CUALQUIER EDAD</div>
+      <div class="hb-d">No tienes que aportar toda la vida: eliges un <b>plazo limitado</b> y a partir de ahí <b>el interés compuesto hace la magia</b> por sí solo.</div>
+      ${chips?`<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:11px">${chips}</div>`:''}
+      <div class="hb-d" style="margin-top:11px">${cierre}</div>
+    </div></div>`;
 }
 
 /* --- PERFIL --- */

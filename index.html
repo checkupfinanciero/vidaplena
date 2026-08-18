@@ -363,7 +363,7 @@ table.tbl input,table.tbl select{padding:8px 10px;font-size:14px}
         <div class="lc-chip"><b>60s+</b><span>Cosecha y libertad</span></div>
       </div>
     </div>
-    <div class="login-foot">Grupo Asesores RAM · Agencia GNP con 26 años de experiencia · v3.5</div>
+    <div class="login-foot">Grupo Asesores RAM · Agencia GNP con 26 años de experiencia · v3.5.1</div>
   </div>
   <div class="login-panel">
     <div class="login-card">
@@ -550,7 +550,7 @@ function contarDiasLaborales(desde, hasta){
 const DIA_MS=864e5;
 function ymd(d){ return new Date(d).toLocaleDateString('en-CA') }   // YYYY-MM-DD local
 function esHoy(ts){ return ymd(ts)===ymd(new Date()) }
-const APP_VERSION = 'v3.5';
+const APP_VERSION = 'v3.5.1';
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('vp_'+k); return v?JSON.parse(v):d }catch(e){ return d } },
   set(k,v){ localStorage.setItem('vp_'+k, JSON.stringify(v)) }
@@ -1372,7 +1372,7 @@ function buildReportHTML(a){
     </div>
     <div class="rp-foot">
       <span><b>${esc(ct.name||agent.name||a.agent)}</b> · ${ct.phone?'WhatsApp '+esc(ct.phone)+' · ':''}${ct.email?esc(ct.email)+' · ':''}Grupo Asesores RAM · Agente GNP</span>
-      <span>Documento informativo con fines de diagnóstico. No constituye una cotización formal. · v3.5</span>
+      <span>Documento informativo con fines de diagnóstico. No constituye una cotización formal. · v3.5.1</span>
     </div>
   </div>`;
 }
@@ -1603,27 +1603,58 @@ function conclSeguros(a,c){
     '«Un seguro no se compra cuando se necesita; se necesita cuando ya no se puede comprar.»');
 }
 
-/* --- SUEÑOS --- */
+/* --- SUEÑOS (incluye el Retiro Feliz como meta propia) --- */
 function conclSuenios(a,c){
-  const list=c.suenios.filter(g=>+g.necesario>0);
-  if(!list.length && !(c.retiroNecesario>0)) return '';
+  const list=c.suenios.filter(g=>+g.necesario>0).map(g=>({
+    nombre:g.nombre||'Meta', anios:+g.anios||0, necesario:+g.necesario||0, faltante:g.faltante,
+    mensual:(+g.anios>0)?g.faltante/(g.anios*12):0, prioridad:+g.prioridad||9
+  }));
+  const hayRetiro=c.retiroNecesario>0;
+  const retiro=hayRetiro?{
+    nombre:'Retiro Feliz', anios:c.retiroAnios, necesario:c.retiroNecesario, faltante:c.retiroFaltante,
+    mensual:c.retiroAnios>0?c.retiroFaltante/(c.retiroAnios*12):0, prioridad:+a.retiro.prioridad||1
+  }:null;
+  const todas=[...list, ...(retiro?[retiro]:[])];
+  if(!todas.length) return '';
   const total=c.faltanteSueniosTotal;
   const ing=+a.fin.ingreso||0;
-  const prox=[...list].filter(g=>+g.anios>0).sort((x,y)=>x.anios-y.anios)[0];
-  const mensualProx=prox?prox.faltante/(prox.anios*12):0;
-  const mesesIngreso=ing?Math.round(total/ing):0;
+  const esfuerzoMes=todas.reduce((t,g)=>t+g.mensual,0);
+  const pctIng=ing?Math.round(esfuerzoMes/ing*100):0;
+  const prox=[...todas].filter(g=>g.anios>0).sort((x,y)=>x.anios-y.anios)[0];
+  const orden=[...todas].sort((x,y)=>x.prioridad-y.prioridad||x.anios-y.anios).slice(0,4);
+  const colorEsf = pctIng<=15?'#7FD1A8' : pctIng<=30?'#FFB65C' : '#FF8A8E';
+
+  const filas=orden.map(g=>{
+    const esRet=g.nombre==='Retiro Feliz';
+    const pct=g.necesario>0?Math.min(100,Math.round((g.necesario-g.faltante)/g.necesario*100)):0;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.1)">
+      <span style="font-size:17px">${esRet?'🌅':'🎯'}</span>
+      <div style="flex:1;min-width:130px">
+        <div style="font-weight:700;font-size:13.5px">${esc(g.nombre)}</div>
+        <div style="font-size:11.5px;color:#9FB8DA">en ${g.anios} año(s) · meta ${fmt$(g.necesario)}${pct>0?` · ${pct}% avanzado`:''}</div>
+      </div>
+      <div style="text-align:right;min-width:112px">
+        <div style="font-family:var(--font-d);font-weight:800;font-size:14.5px;color:#FFB65C">${fmt$(g.mensual)}</div>
+        <div style="font-size:10.5px;color:#9FB8DA">al mes</div>
+      </div>
+    </div>`}).join('');
+
   return conclBox('El costo de tus sueños',
     `Tus metas y tu retiro suman <span class="hl">${fmt$(total)}</span> por financiar.`,
-    `<div class="cnums">
-      <div class="cnum"><small>Sueños capturados</small><b>${list.length}</b></div>
-      <div class="cnum"><small>Equivale a</small><b>${mesesIngreso} meses de ingreso</b></div>
-      ${prox?`<div class="cnum"><small>Tu meta más próxima</small><b>${esc(prox.nombre||'Meta')} · ${prox.anios} años</b></div>`:''}
-      ${prox&&mensualProx>0?`<div class="cnum"><small>Requiere al mes</small><b>${fmt$(mensualProx)}</b></div>`:''}
-    </div>
-    <p style="margin-top:12px">${prox&&mensualProx>0
-      ? `Para lograr <b>${esc(prox.nombre||'tu primera meta')}</b> en ${prox.anios} años necesitas apartar <b>${fmt$(mensualProx)}</b> cada mes. Con un instrumento que rinda por encima de la inflación, ese esfuerzo baja.`
-      : 'Cada meta tiene una fecha y un costo. Ponerles número es lo que las convierte en plan.'}</p>`,
-    '«Un sueño sin fecha ni cantidad es solo un deseo. Hoy los estamos convirtiendo en plan.»');
+    `<div style="margin-top:6px">${filas}</div>
+     <div class="cnums" style="margin-top:14px">
+       <div class="cnum"><small>Metas capturadas</small><b>${todas.length}${hayRetiro?' (con retiro)':''}</b></div>
+       <div class="cnum"><small>Esfuerzo mensual total</small><b style="color:${colorEsf}">${fmt$(esfuerzoMes)}</b></div>
+       ${ing?`<div class="cnum"><small>Equivale a</small><b>${pctIng}% de tu ingreso</b></div>`:''}
+       ${prox?`<div class="cnum"><small>Tu meta más próxima</small><b>${esc(prox.nombre)} · ${prox.anios} años</b></div>`:''}
+     </div>
+     ${hayRetiro?`<p style="margin-top:12px">🌅 <b>Tu Retiro Feliz</b> necesita <b>${fmt$(retiro.necesario)}</b> en <b>${retiro.anios} años</b>${retiro.faltante<retiro.necesario?` (ya llevas ${fmt$(retiro.necesario-retiro.faltante)})`:''}: son <b class="hl">${fmt$(retiro.mensual)}</b> mensuales para vivir tus ${c.aniosJubilacion} años de jubilación sin depender de nadie.</p>`:''}
+     <p style="margin-top:10px">${prox&&prox.mensual>0
+       ? `Todo junto suma <b>${fmt$(esfuerzoMes)}</b> al mes${ing?` —el <b>${pctIng}%</b> de tu ingreso—`:''}, y este cálculo es <b>sin rendimientos</b>: es lo que costaría guardarlo debajo del colchón.${pctIng>50?` Por eso no se financian todas al mismo tiempo: <b>priorizamos</b>, y dejamos que el interés compuesto haga la parte pesada.`:` Con un instrumento que rinda por encima de la inflación, ese esfuerzo <b>baja</b>.`}`
+       : 'Cada meta tiene una fecha y un costo. Ponerles número es lo que las convierte en plan.'}</p>`,
+    hayRetiro
+      ? '«El retiro no es una edad, es una cantidad. Y hoy sabemos exactamente cuál es la tuya.»'
+      : '«Un sueño sin fecha ni cantidad es solo un deseo. Hoy los estamos convirtiendo en plan.»');
 }
 
 /* --- TU RELOJ --- */

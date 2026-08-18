@@ -201,6 +201,24 @@ table.tbl input,table.tbl select{padding:8px 10px;font-size:14px}
 .gchip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700}
 .gchip b{color:#FFD9AE}
 /* ---- Gráficas del panel admin ---- */
+/* ===== Conclusiones de sección (para el prospecto) ===== */
+.concl{background:linear-gradient(135deg,#0B2545 0%,#13315C 58%,#1D4E89 100%);color:#fff;border-radius:var(--r-lg);padding:22px 26px;margin-top:18px;position:relative;overflow:hidden}
+.concl::after{content:"";position:absolute;right:-50px;top:-80px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(255,109,34,.38),transparent 68%)}
+.concl>*{position:relative;z-index:2}
+.concl .ctag{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#FFD9AE;margin-bottom:10px}
+.concl h4{font-family:var(--font-d);font-size:clamp(17px,2.2vw,21px);font-weight:800;letter-spacing:-.3px;line-height:1.3;margin-bottom:6px}
+.concl p{font-size:13.8px;color:#C8D8EE;line-height:1.55}
+.concl b{color:#fff}
+.concl .hl{color:#FFB65C}
+.concl .cgrid{display:flex;gap:26px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.concl .cnums{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;flex:1;min-width:240px}
+.cnum{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:11px 14px}
+.cnum small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:#9FB8DA;font-weight:700;margin-bottom:2px}
+.cnum b{font-family:var(--font-d);font-size:19px;font-weight:800;letter-spacing:-.3px}
+.cbar{height:34px;border-radius:10px;overflow:hidden;display:flex;background:rgba(255,255,255,.12);margin-top:4px}
+.cbar i{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;white-space:nowrap;transition:width .6s ease}
+.cleg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#C8D8EE;margin-top:9px}
+.cquote{background:rgba(255,255,255,.1);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:11px 15px;margin-top:14px;font-size:13.5px;font-style:italic;color:#EAF1FA}
 .chart-wrap{background:var(--card);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:20px 22px;margin-bottom:20px}
 .chart-wrap h4{font-family:var(--font-d);font-size:15px;color:var(--navy-900);margin-bottom:2px}
 .chart-wrap .csub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
@@ -345,7 +363,7 @@ table.tbl input,table.tbl select{padding:8px 10px;font-size:14px}
         <div class="lc-chip"><b>60s+</b><span>Cosecha y libertad</span></div>
       </div>
     </div>
-    <div class="login-foot">Grupo Asesores RAM · Agencia GNP con 26 años de experiencia · v3.4</div>
+    <div class="login-foot">Grupo Asesores RAM · Agencia GNP con 26 años de experiencia · v3.5</div>
   </div>
   <div class="login-panel">
     <div class="login-card">
@@ -532,7 +550,7 @@ function contarDiasLaborales(desde, hasta){
 const DIA_MS=864e5;
 function ymd(d){ return new Date(d).toLocaleDateString('en-CA') }   // YYYY-MM-DD local
 function esHoy(ts){ return ymd(ts)===ymd(new Date()) }
-const APP_VERSION = 'v3.4';
+const APP_VERSION = 'v3.5';
 const LS = {
   get(k,d){ try{ const v=localStorage.getItem('vp_'+k); return v?JSON.parse(v):d }catch(e){ return d } },
   set(k,v){ localStorage.setItem('vp_'+k, JSON.stringify(v)) }
@@ -1034,7 +1052,8 @@ function stepPerfil(a,c){
     </tbody></table></div>
     <button class="btn btn-ghost btn-sm add-row" onclick="addRow('dependientes',{nombre:'',parentesco:'',edad:'',anios:''})">＋ Agregar dependiente</button>
     <div style="margin-top:14px;background:var(--teal-soft);border-radius:12px;padding:12px 16px;font-size:14px" data-recalc="promDep">Promedio de dependencia: <b class="num">${fmtN(c.promDep)} años</b></div>
-  </div>`;
+  </div>
+  ${conclPerfil(a,c)}`;
 }
 
 /* --- Paso 2: finanzas --- */
@@ -1069,7 +1088,8 @@ function stepFinanzas(a,c){
     <p class="desc" style="color:#AEBBDF">Según una fórmula actuarial, su patrimonio actual —entre bienes, dinero e inversiones— debería ser de:</p>
     <div class="num" style="font-size:clamp(30px,4vw,44px);font-weight:800;color:var(--gold);letter-spacing:-1px" data-recalc>${fmt$(c.patrimonioIdeal)}</div>
     <p style="font-size:12.5px;color:#8FA2D6;margin-top:6px">(edad − 26.5) × 2.65 × ingreso mensual · considerando su edad e ingreso actuales</p>
-  </div>`;
+  </div>
+  ${conclFinanzas(a,c)}`;
 }
 
 /* --- Paso 3: seguros --- */
@@ -1095,7 +1115,8 @@ function stepSeguros(a,c){
       <div class="rp-box"><div class="bt">Deducible GMM mínimo</div><div class="bv" data-recalc>${fmt$(c.dedMin)}</div><div class="bd">1 mes de su ingreso</div></div>
       <div class="rp-box"><div class="bt">Deducible GMM ideal</div><div class="bv" data-recalc>${fmt$(c.dedIdeal)}</div><div class="bd">2 meses de su ingreso</div></div>
     </div>
-  </div>`;
+  </div>
+  ${conclSeguros(a,c)}`;
 }
 function gapBars(a,c){
   const bar=(t,have,ideal,min)=>{ const pct=ideal>0?Math.min(100,have/ideal*100):0;
@@ -1136,7 +1157,8 @@ function stepSuenios(a,c){
       <div class="field"><label>Tasa de reemplazo para el retiro</label>${sel('retiro.tasaReemplazo',CAT.tasaReemplazo,a.retiro.tasaReemplazo)}</div>
       <div class="rp-box"><div class="bt">Capital de retiro necesario</div><div class="bv orange" data-recalc>${fmt$(c.retiroNecesario)}</div><div class="bd">ingreso × tasa de reemplazo × 12 × ${c.retiroAnios} años productivos restantes</div></div>
     </div>
-  </div>`;
+  </div>
+  ${conclSuenios(a,c)}`;
 }
 
 /* --- Paso 5: Reloj del Patrimonio + conclusiones --- */
@@ -1176,7 +1198,8 @@ function stepReloj(a,c){
       <div class="gb-txt"><b>Tienes por ganar al menos esto</b>, tan solo si mantienes el mismo ingreso durante los años que te restan de vida productiva. La pregunta es: ¿cuánto de eso se quedará contigo?</div>
     </div>
     <div class="punch">Si hoy cuentas con <em>salud</em> y capacidad económica para protegerte y ahorrar para tus sueños… <em>¿cuándo crees que será el mejor momento para iniciar?</em></div>
-  </div>`;
+  </div>
+  ${conclReloj(a,c)}`;
 }
 
 /* --- Paso 6: plan --- */
@@ -1349,7 +1372,7 @@ function buildReportHTML(a){
     </div>
     <div class="rp-foot">
       <span><b>${esc(ct.name||agent.name||a.agent)}</b> · ${ct.phone?'WhatsApp '+esc(ct.phone)+' · ':''}${ct.email?esc(ct.email)+' · ':''}Grupo Asesores RAM · Agente GNP</span>
-      <span>Documento informativo con fines de diagnóstico. No constituye una cotización formal. · v3.4</span>
+      <span>Documento informativo con fines de diagnóstico. No constituye una cotización formal. · v3.5</span>
     </div>
   </div>`;
 }
@@ -1466,6 +1489,162 @@ async function resetPass(u){
   document.getElementById('modalRoot').innerHTML=`<div class="modal-back" onclick="if(event.target===this)this.remove()"><div class="modal"><h3>Contraseña temporal</h3><p class="msub">Compártela con <b>${esc(u)}</b>; podrá cambiarla en Ajustes.</p><div style="font-family:var(--font-d);font-size:24px;font-weight:800;background:var(--gold-soft);border-radius:12px;padding:14px;text-align:center;letter-spacing:1px">${np}</div><div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="btn btn-navy btn-sm" onclick="document.querySelector('.modal-back').remove()">Listo</button></div></div></div>`;
 }
 
+
+
+/* ===================== Conclusiones de sección (visuales, para el prospecto) ===================== */
+function conclBox(tag, titulo, cuerpo, frase){
+  return `<div class="concl">
+    <div class="ctag">✨ ${tag}</div>
+    <h4>${titulo}</h4>
+    ${cuerpo}
+    ${frase?`<div class="cquote">💬 ${frase}</div>`:''}
+  </div>`;
+}
+function donut(pct, color, label, sub){
+  const R=44, C=2*Math.PI*R, off=C*(1-Math.min(100,pct)/100);
+  return `<svg width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0">
+    <circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="14"/>
+    <circle cx="60" cy="60" r="${R}" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"
+      stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 60 60)"/>
+    <text x="60" y="57" text-anchor="middle" font-family="Sora,sans-serif" font-size="24" font-weight="800" fill="#fff">${label}</text>
+    <text x="60" y="75" text-anchor="middle" font-size="11" fill="#9FB8DA">${sub}</text></svg>`;
+}
+
+/* --- PERFIL --- */
+function conclPerfil(a,c){
+  const edad=+a.perfil.edad||0, jub=+a.perfil.edadJub||65;
+  if(!edad) return '';
+  const deps=a.dependientes.filter(d=>(d.nombre||'').trim()||+d.anios>0);
+  const et=ETAPAS[c.etapaIdx]||ETAPAS[2];
+  const prodPct=Math.round(Math.max(0,jub-edad)/Math.max(1,jub-18)*100);
+  return conclBox('Lo que nos dice tu perfil',
+    `A tus <span class="hl">${edad} años</span> estás en la etapa de <span class="hl">${esc(et.nom||'construcción')}</span>.`,
+    `<div class="cgrid">
+      ${donut(prodPct,'#FF6D22',c.aniosProductivos,'años')}
+      <div class="cnums">
+        <div class="cnum"><small>Vida productiva restante</small><b>${c.aniosProductivos} años</b></div>
+        <div class="cnum"><small>Personas que dependen de ti</small><b>${deps.length}</b></div>
+        <div class="cnum"><small>Compromiso promedio</small><b>${fmtN(c.promDep)} años</b></div>
+        <div class="cnum"><small>Te jubilas en</small><b>${jub}</b></div>
+      </div>
+    </div>
+    <p style="margin-top:12px">Te queda el <b>${prodPct}%</b> de tu vida productiva para construir todo lo que sigue${deps.length?`, y hay <b>${deps.length} persona(s)</b> cuyo bienestar depende de que lo hagas bien`:''}.</p>`,
+    deps.length?'«Todo lo que construyas en estos años es lo que ellos van a recibir.»':'«Cada año que pasa es un año menos de aportaciones, no de metas.»');
+}
+
+/* --- FINANZAS: el flujo mensual --- */
+function conclFinanzas(a,c){
+  const ing=+a.fin.ingreso||0, gas=+a.fin.gasto||0, deu=+a.fin.deudas||0;
+  if(!ing) return '';
+  const disp=Math.max(0,ing-gas);
+  const pctG=Math.min(100,Math.round(gas/ing*100)), pctD=Math.max(0,100-pctG);
+  const excede=gas>ing;
+  const anual=disp*12;
+  const mesesDeuda=disp>0&&deu>0?Math.ceil(deu/disp):0;
+  const tr=c.tasaRealAhorro;
+  const colorD = pctD>=20?'#2FA36B' : pctD>=10?'#FFB65C' : '#FF6D22';
+  const titulo = excede
+    ? 'Hoy tus gastos superan tus ingresos.'
+    : pctD>=20 ? `Tienes una capacidad de ahorro <span class="hl">sana</span>: ${pctD}% de tu ingreso.`
+    : pctD>0 ? `Tu gasto absorbe el <span class="hl">${pctG}%</span> de lo que ganas.`
+    : 'Todo tu ingreso se está consumiendo.';
+  return conclBox('Tu flujo mensual', titulo,
+    `<div class="cbar">
+       <i style="width:${pctG}%;background:linear-gradient(90deg,#E5484D,#FF6D22)">${pctG>=12?pctG+'% gasto':''}</i>
+       <i style="width:${pctD}%;background:linear-gradient(90deg,${colorD},#7FD1A8)">${pctD>=12?pctD+'% disponible':''}</i>
+     </div>
+     <div class="cleg">
+       <span><i class="dot-l" style="background:#FF6D22"></i>Gasto fijo: <b>${fmt$(gas)}</b></span>
+       <span><i class="dot-l" style="background:${colorD}"></i>Disponible para ahorro: <b>${fmt$(disp)}</b></span>
+       ${deu>0?`<span><i class="dot-l" style="background:#8FA2D6"></i>Deudas: <b>${fmt$(deu)}</b></span>`:''}
+     </div>
+     <div class="cnums" style="margin-top:14px">
+       <div class="cnum"><small>De cada $100 que ganas</small><b>gastas $${pctG}</b></div>
+       <div class="cnum"><small>Podrías destinar al año</small><b>${fmt$(anual)}</b></div>
+       ${mesesDeuda?`<div class="cnum"><small>Liquidar tus deudas te toma</small><b>${mesesDeuda} mes(es)</b></div>`:''}
+       <div class="cnum"><small>Tasa real de tu ahorro</small><b style="color:${tr>0?'#7FD1A8':'#FF8A8E'}">${fmtN(tr)}%</b></div>
+     </div>
+     <p style="margin-top:12px">${excede
+       ? `Tu gasto mensual es <b>${fmt$(gas-ing)}</b> mayor que tu ingreso: el primer objetivo es equilibrar ese flujo antes de invertir.`
+       : tr<=0
+         ? `Tienes <b>${fmt$(disp)}</b> al mes disponibles, pero donde ahorras hoy tu dinero <b>pierde</b> ${fmtN(Math.abs(tr))}% de valor cada año. Ahorrar no basta: hay que hacerlo en el lugar correcto.`
+         : `Tienes <b>${fmt$(disp)}</b> mensuales disponibles. Ese flujo es la materia prima de todo lo que vamos a diseñar hoy.`}</p>`,
+    excede?'«El primer paso no es ganar más, es ordenar lo que ya entra.»'
+      :`«Si destinaras solo ese ${pctD}% de forma consistente, en 10 años habrías movilizado ${fmt$(anual*10)}.»`);
+}
+
+/* --- PROTECCIÓN --- */
+function conclSeguros(a,c){
+  const vc=+a.seguros.vidaCob||0, gc=+a.seguros.gmmCob||0, gasto=+a.fin.gasto||0;
+  if(!gasto && !vc && !gc) return '';
+  const pctVida=c.vidaIdeal>0?Math.min(100,Math.round(vc/c.vidaIdeal*100)):0;
+  const pctGmm=Math.min(100,Math.round(gc/c.gmmIdeal*100));
+  const mesesCubiertos=gasto>0?Math.floor(vc/gasto):0;
+  const dur = mesesCubiertos>=12
+    ? `${Math.floor(mesesCubiertos/12)} año(s)${mesesCubiertos%12?` y ${mesesCubiertos%12} mes(es)`:''}`
+    : `${mesesCubiertos} mes(es)`;
+  const col=p=>p>=100?'#2FA36B':p>=50?'#FFB65C':'#FF6D22';
+  const titulo = pctVida>=100&&pctGmm>=100 ? '¡Tu patrimonio está blindado!'
+    : vc===0&&gc===0 ? 'Hoy tu patrimonio está <span class="hl">completamente expuesto</span>.'
+    : `Tu protección cubre <span class="hl">${pctVida}%</span> de lo que tu familia necesitaría.`;
+  return conclBox('Tu nivel de blindaje', titulo,
+    `<div class="cgrid">
+      ${donut(pctVida,col(pctVida),pctVida+'%','Vida')}
+      ${donut(pctGmm,col(pctGmm),pctGmm+'%','Salud')}
+      <div class="cnums">
+        <div class="cnum"><small>Gasto familiar cubierto</small><b>${dur}</b></div>
+        <div class="cnum"><small>Falta en Vida/Invalidez</small><b>${c.vidaFaltIdeal>0?fmt$(c.vidaFaltIdeal):'✓ cubierto'}</b></div>
+        <div class="cnum"><small>Falta en Gastos Médicos</small><b>${c.gmmFaltIdeal>0?fmt$(c.gmmFaltIdeal):'✓ cubierto'}</b></div>
+      </div>
+    </div>
+    <p style="margin-top:12px">${vc===0
+      ? `Si algo te pasara hoy, tu familia tendría que sostener <b>${fmt$(gasto)}</b> mensuales por su cuenta, desde el primer día.`
+      : `Tu suma asegurada sostendría a tu familia <b>${dur}</b>${c.promDep>0?`, cuando el compromiso real con ellos es de <b>${fmtN(c.promDep)} años</b>`:''}. Después de ese punto, quedarían solos.`}</p>`,
+    '«Un seguro no se compra cuando se necesita; se necesita cuando ya no se puede comprar.»');
+}
+
+/* --- SUEÑOS --- */
+function conclSuenios(a,c){
+  const list=c.suenios.filter(g=>+g.necesario>0);
+  if(!list.length && !(c.retiroNecesario>0)) return '';
+  const total=c.faltanteSueniosTotal;
+  const ing=+a.fin.ingreso||0;
+  const prox=[...list].filter(g=>+g.anios>0).sort((x,y)=>x.anios-y.anios)[0];
+  const mensualProx=prox?prox.faltante/(prox.anios*12):0;
+  const mesesIngreso=ing?Math.round(total/ing):0;
+  return conclBox('El costo de tus sueños',
+    `Tus metas y tu retiro suman <span class="hl">${fmt$(total)}</span> por financiar.`,
+    `<div class="cnums">
+      <div class="cnum"><small>Sueños capturados</small><b>${list.length}</b></div>
+      <div class="cnum"><small>Equivale a</small><b>${mesesIngreso} meses de ingreso</b></div>
+      ${prox?`<div class="cnum"><small>Tu meta más próxima</small><b>${esc(prox.nombre||'Meta')} · ${prox.anios} años</b></div>`:''}
+      ${prox&&mensualProx>0?`<div class="cnum"><small>Requiere al mes</small><b>${fmt$(mensualProx)}</b></div>`:''}
+    </div>
+    <p style="margin-top:12px">${prox&&mensualProx>0
+      ? `Para lograr <b>${esc(prox.nombre||'tu primera meta')}</b> en ${prox.anios} años necesitas apartar <b>${fmt$(mensualProx)}</b> cada mes. Con un instrumento que rinda por encima de la inflación, ese esfuerzo baja.`
+      : 'Cada meta tiene una fecha y un costo. Ponerles número es lo que las convierte en plan.'}</p>`,
+    '«Un sueño sin fecha ni cantidad es solo un deseo. Hoy los estamos convirtiendo en plan.»');
+}
+
+/* --- TU RELOJ --- */
+function conclReloj(a,c){
+  const edad=+a.perfil.edad||0, ing=+a.fin.ingreso||0;
+  if(!edad||!ing) return '';
+  const vividoPct=Math.round(edad/ESPERANZA_VIDA*100);
+  return conclBox('Tu reloj patrimonial',
+    `Vas a ganar <span class="hl">${fmt$(c.porGanar)}</span> en el resto de tu vida productiva.`,
+    `<div class="cgrid">
+      ${donut(vividoPct,'#FFB65C',c.aniosDisfrutar,'años por vivir')}
+      <div class="cnums">
+        <div class="cnum"><small>Años para construir</small><b>${c.aniosProductivos}</b></div>
+        <div class="cnum"><small>Años de jubilación</small><b>${c.aniosJubilacion}</b></div>
+        <div class="cnum"><small>Ingreso de por vida</small><b>${fmt$(c.porGanar)}</b></div>
+        <div class="cnum"><small>Patrimonio de referencia hoy</small><b>${fmt$(c.patrimonioIdeal)}</b></div>
+      </div>
+    </div>
+    <p style="margin-top:12px">Vas a vivir <b>${c.aniosJubilacion} años</b> de tu jubilación con lo que logres acumular en <b>${c.aniosProductivos} años</b> de trabajo. La pregunta no es cuánto vas a ganar, sino <b>cuánto vas a conservar</b>.</p>`,
+    '«Por tus manos pasará una fortuna. Lo único que decides es cuánta se queda contigo.»');
+}
 
 /* ===================== Productividad del equipo (admin) ===================== */
 let _prodDays = 14, _prodCache = null, _prodTimer = null;
